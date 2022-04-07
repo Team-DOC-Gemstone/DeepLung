@@ -65,7 +65,7 @@ def compute_mean_ci(interp_sens, confidence = 0.95):
     sens_up   = np.zeros((interp_sens.shape[1]),dtype = 'float32')
     
     Pz = (1.0-confidence)/2.0
-    print(interp_sens.shape)
+    print((interp_sens.shape))
     for i in range(interp_sens.shape[1]):
         # get sorted vector
         vec = interp_sens[:,i]
@@ -136,7 +136,7 @@ def computeFROC(FROCGTList, FROCProbList, totalNumberOfImages, excludeList):
     totalNumberOfCandidates = len(FROCProbList_local)
     fpr, tpr, thresholds = skl_metrics.roc_curve(FROCGTList_local, FROCProbList_local)
     if sum(FROCGTList) == len(FROCGTList): # Handle border case when there are no false positives and ROC analysis give nan values.
-      print "WARNING, this system has no false positives.."
+      print("WARNING, this system has no false positives..")
       fps = np.zeros(len(fpr))
     else:
       fps = fpr * (totalNumberOfCandidates - numberOfDetectedLesions) / totalNumberOfImages
@@ -184,16 +184,16 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
         if (maxNumberOfCADMarks > 0):
             # number of CAD marks, only keep must suspicous marks
 
-            if len(nodules.keys()) > maxNumberOfCADMarks:
+            if len(list(nodules.keys())) > maxNumberOfCADMarks:
                 # make a list of all probabilities
                 probs = []
-                for keytemp, noduletemp in nodules.iteritems():
+                for keytemp, noduletemp in nodules.items():
                     probs.append(float(noduletemp.CADprobability))
                 probs.sort(reverse=True) # sort from large to small
                 probThreshold = probs[maxNumberOfCADMarks]
                 nodules2 = {}
                 nrNodules2 = 0
-                for keytemp, noduletemp in nodules.iteritems():
+                for keytemp, noduletemp in nodules.items():
                     if nrNodules2 >= maxNumberOfCADMarks:
                         break
                     if float(noduletemp.CADprobability) > probThreshold:
@@ -237,7 +237,7 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
             candidates = {}
 
         # add to the total number of candidates
-        totalNumberOfCands += len(candidates.keys())
+        totalNumberOfCands += len(list(candidates.keys()))
 
         # make a copy in which items will be deleted
         candidates2 = candidates.copy()
@@ -269,7 +269,7 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
 
             found = False
             noduleMatches = []
-            for key, candidate in candidates.iteritems():
+            for key, candidate in candidates.items():
                 x2 = float(candidate.coordX)
                 y2 = float(candidate.coordY)
                 z2 = float(candidate.coordZ)
@@ -278,13 +278,13 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
                     if (noduleAnnot.state == "Included"):
                         found = True
                         noduleMatches.append(candidate)
-                        if key not in candidates2.keys():
-                            print "This is strange: CAD mark %s detected two nodules! Check for overlapping nodule annotations, SeriesUID: %s, nodule Annot ID: %s" % (str(candidate.id), seriesuid, str(noduleAnnot.id))
+                        if key not in list(candidates2.keys()):
+                            print("This is strange: CAD mark %s detected two nodules! Check for overlapping nodule annotations, SeriesUID: %s, nodule Annot ID: %s" % (str(candidate.id), seriesuid, str(noduleAnnot.id)))
                         else:
                             del candidates2[key]
                     elif (noduleAnnot.state == "Excluded"): # an excluded nodule
                         if bOtherNodulesAsIrrelevant: #    delete marks on excluded nodules so they don't count as false positives
-                            if key in candidates2.keys():
+                            if key in list(candidates2.keys()):
                                 irrelevantCandidates += 1
                                 ignoredCADMarksList.append("%s,%s,%s,%s,%s,%s,%.9f" % (seriesuid, -1, candidate.coordX, candidate.coordY, candidate.coordZ, str(candidate.id), float(candidate.CADprobability)))
                                 del candidates2[key]
@@ -319,7 +319,7 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
                     nodNoCandFile.write("%s,%s,%s,%s,%s,%.9f,%s\n" % (seriesuid, noduleAnnot.id, noduleAnnot.coordX, noduleAnnot.coordY, noduleAnnot.coordZ, float(noduleAnnot.diameter_mm), str(-1)))
 
         # add all false positives to the vectors
-        for key, candidate3 in candidates2.iteritems():
+        for key, candidate3 in candidates2.items():
             candFPs += 1
             FROCGTList.append(0.0)
             FROCProbList.append(float(candidate3.CADprobability))
@@ -373,9 +373,9 @@ def evaluateCAD(seriesUIDs, results_filename, outputDir, allNodules, CADSystemNa
             frvvlu += ss
             nxth *= 2
         if abs(nxth - 16) < 1e-5: break
-    print(frvvlu/7, nxth)
-    print(sens_itp[fps_itp==0.125]+sens_itp[fps_itp==0.25]+sens_itp[fps_itp==0.5]+sens_itp[fps_itp==1]+sens_itp[fps_itp==2]\
-        +sens_itp[fps_itp==4]+sens_itp[fps_itp==8])
+    print((frvvlu/7, nxth))
+    print((sens_itp[fps_itp==0.125]+sens_itp[fps_itp==0.25]+sens_itp[fps_itp==0.5]+sens_itp[fps_itp==1]+sens_itp[fps_itp==2]\
+        +sens_itp[fps_itp==4]+sens_itp[fps_itp==8]))
     if performBootstrapping:
         # Write mean, lower, and upper bound curves to disk
         with open(os.path.join(outputDir, "froc_%s_bootstrapping.csv" % CADSystemName), 'w') as f:
@@ -475,8 +475,8 @@ def collectNoduleAnnotations(annotations, annotations_excluded, seriesUIDs):
         noduleCount      += numberOfIncludedNodules
         noduleCountTotal += len(nodules)
     
-    print 'Total number of included nodule annotations: ' + str(noduleCount)
-    print 'Total number of nodule annotations: ' + str(noduleCountTotal)
+    print('Total number of included nodule annotations: ' + str(noduleCount))
+    print('Total number of nodule annotations: ' + str(noduleCountTotal))
     return allNodules
     
     
@@ -504,7 +504,7 @@ def noduleCADEvaluation(annotations_filename,annotations_excluded_filename,serie
     @param outputDir: output directory
     '''
     
-    print annotations_filename
+    print(annotations_filename)
     
     (allNodules, seriesUIDs) = collect(annotations_filename, annotations_excluded_filename, seriesuids_filename)
     
@@ -520,4 +520,4 @@ if __name__ == '__main__':
     seriesuids_filename = './annotations/seriesuids.csv'
     results_filename = './annotations/3DRes18FasterR-CNN.csv'#3D Faster R-CNN - Res18.csv' #top5.csv'#
     noduleCADEvaluation(annotations_filename,annotations_excluded_filename,seriesuids_filename,results_filename,'./')
-    print "Finished!"
+    print("Finished!")
